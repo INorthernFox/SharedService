@@ -1,58 +1,127 @@
-name: publish-release
+name: Publish Release
 
 on:
   push:
     tags:
-      - 'v*'     # v1.2.3 -> 1.2.3
+      - 'v*'  # Триггер на теги вида v1.2.3
 
 permissions:
   contents: read
   packages: write
 
+env:
+  DOTNET_VERSION: '9.0.x'
+  CONFIGURATION: Release
+
 jobs:
   pack-and-publish:
     runs-on: ubuntu-latest
+    
     strategy:
       fail-fast: false
       matrix:
         include:
           - name: SharedKernel
             path: src/SharedService.SharedKernel/SharedService.SharedKernel.csproj
-            workdir: src/SharedService.SharedKernel
+            package-id: SharedService.SharedKernel
+            description: "Базовые доменные классы, Error, Result-pattern, StyleCop конфигурация"
           - name: Core
             path: src/SharedService.Core/SharedService.Core.csproj
-            workdir: src/SharedService.Core
+            package-id: SharedService.Core
+            description: "Интерфейсы Application слоя, CQRS, UnitOfWork, FluentValidation"
           - name: Framework
             path: src/SharedService.Framework/SharedService.Framework.csproj
-            workdir: src/SharedService.Framework
-
+            package-id: SharedService.Framework
+            description: "ASP.NET Core extensions, Middleware, Swagger, HTTP Clients"
+    
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-dotnet@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          dotnet-version: '9.0.x'
-
-      - name: Extract version from tag
-        id: ver
-        run: echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
-
-      - name: Restore
-        run: dotnet restore
-
-      - name: Pack ${{ matrix.name }}
-        run: |
-          dotnet pack "${{ matrix.path }}" \
-            -c Release \
-            -o "${{ matrix.workdir }}/out" \
-            -p:Version=${{ steps.ver.outputs.value }} \
-            -p:ContinuousIntegrationBuild=true
-
-      - name: Publish ${{ matrix.name }} to GitHub Packages
+          fetch-depth: 0  # Полная история для корректной работы GitVersion (если используется)
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          source-url: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract version from tag
+        id: version
         run: |
-          dotnet nuget push "${{ matrix.workdir }}/out/*.nupkg" \
-            --api-key "$NUGET_AUTH_TOKEN" \
+          VERSION=${GITHUB_REF_NAME#v}
+          echo "number=$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Publishing version: $VERSION"
+      
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+      
+      - name: Restore dependencies
+        run: dotnet restore
+      
+      - name: Build ${{ matrix.name }}
+        run: |
+          dotnet build ${{ matrix.path }} \
+            --configuration ${{ env.CONFIGURATION }} \
+            --no-restore \
+            -p:Version=${{ steps.version.outputs.number }}
+      
+      - name: Pack ${{ matrix.name }}
+        run: |
+          dotnet pack ${{ matrix.path }} \
+            --configuration ${{ env.CONFIGURATION }} \
+            --no-build \
+            --output ./packages \
+            -p:Version=${{ steps.version.outputs.number }} \
+            -p:PackageVersion=${{ steps.version.outputs.number }} \
+            -p:PackageId=${{ matrix.package-id }} \
+            -p:Description="${{ matrix.description }}" \
+            -p:ContinuousIntegrationBuild=true \
+            -p:RepositoryUrl=https://github.com/${{ github.repository }} \
+            -p:RepositoryType=git
+      
+      - name: Publish ${{ matrix.name }} to GitHub Packages
+        run: |
+          dotnet nuget push "./packages/*.nupkg" \
+            --api-key ${{ secrets.GITHUB_TOKEN }} \
             --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
             --skip-duplicate
+      
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}-${{ steps.version.outputs.number }}
+          path: ./packages/*.nupkg
+          retention-days: 30
+
+  create-release:
+    needs: pack-and-publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./all-packages
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ./all-packages/**/*.nupkg
+          generate_release_notes: true
+          draft: false
+          prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
