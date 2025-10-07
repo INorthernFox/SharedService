@@ -13,4 +13,13 @@
         <PackageTags>Shared;Utilities;Abstractions;Helpers</PackageTags>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="9.0.9" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\SharedService.SharedKernel\SharedService.SharedKernel.csproj" />
+    </ItemGroup>
+
 </Project>

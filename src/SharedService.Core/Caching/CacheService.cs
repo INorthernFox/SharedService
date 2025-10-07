@@ -2,7 +2,7 @@
 using System.Text.Json;
 using Microsoft.Extensions.Caching.Distributed;
 
-namespace SharedKernel.Caching;
+namespace SharedService.Core.Caching;
 
 public class CacheService : ICacheService
 {

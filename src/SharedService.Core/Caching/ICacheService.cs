@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
 
-namespace SharedKernel.Caching;
+namespace SharedService.Core.Caching;
 
 public interface ICacheService
 {
