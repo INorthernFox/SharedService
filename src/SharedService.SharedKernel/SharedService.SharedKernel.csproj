@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
-    <PackageId>INorthernFox.SharedService</PackageId>
+    <PackageId>INorthernFox.SharedService.SharedKernel</PackageId>
     <Version>1.0.0</Version>
     <Authors>INorthernFox</Authors>
     <Company>INorthernFox</Company>
@@ -27,6 +27,10 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+
+    <RootNamespace>SharedKernel</RootNamespace>
+
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

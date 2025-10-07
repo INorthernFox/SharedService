@@ -8,7 +8,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0F4AD6D9-2D69-485E-97EF-1EBAD5FB1061}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedKernel", "src\SharedKernel\SharedKernel.csproj", "{190F4FE7-2F72-482D-A50B-5B73E172AB04}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedService.SharedKernel", "src\SharedService.SharedKernel\SharedService.SharedKernel.csproj", "{190F4FE7-2F72-482D-A50B-5B73E172AB04}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedService.Core", "src\SharedService.Core\SharedService.Core.csproj", "{898D37CA-BF6A-4A70-80D4-A0E2434C63AE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedService.Framework", "src\SharedService.Framework\SharedService.Framework.csproj", "{C73605F7-2B23-4878-B8B7-B70CB7CE0D3E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,11 +21,21 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{190F4FE7-2F72-482D-A50B-5B73E172AB04} = {0F4AD6D9-2D69-485E-97EF-1EBAD5FB1061}
+		{898D37CA-BF6A-4A70-80D4-A0E2434C63AE} = {0F4AD6D9-2D69-485E-97EF-1EBAD5FB1061}
+		{C73605F7-2B23-4878-B8B7-B70CB7CE0D3E} = {0F4AD6D9-2D69-485E-97EF-1EBAD5FB1061}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{190F4FE7-2F72-482D-A50B-5B73E172AB04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{190F4FE7-2F72-482D-A50B-5B73E172AB04}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{190F4FE7-2F72-482D-A50B-5B73E172AB04}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{190F4FE7-2F72-482D-A50B-5B73E172AB04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{898D37CA-BF6A-4A70-80D4-A0E2434C63AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{898D37CA-BF6A-4A70-80D4-A0E2434C63AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{898D37CA-BF6A-4A70-80D4-A0E2434C63AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{898D37CA-BF6A-4A70-80D4-A0E2434C63AE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C73605F7-2B23-4878-B8B7-B70CB7CE0D3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C73605F7-2B23-4878-B8B7-B70CB7CE0D3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C73605F7-2B23-4878-B8B7-B70CB7CE0D3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C73605F7-2B23-4878-B8B7-B70CB7CE0D3E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
