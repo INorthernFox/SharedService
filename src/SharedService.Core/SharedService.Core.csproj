@@ -10,7 +10,7 @@
         <PackageProjectUrl>https://github.com/INorthernFox/SharedService</PackageProjectUrl>
         <RepositoryUrl>https://github.com/INorthernFox/SharedService</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <PackageTags>Shared;Utilities;Abstractions;Helpers;CSharpFunctionalExtensions</PackageTags>
+        <PackageTags>Shared;Utilities;Abstractions;Helpers</PackageTags>
     </PropertyGroup>
 
 </Project>

@@ -4,6 +4,13 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageId>INorthernFox.SharedService.Framework</PackageId>
+        <Authors>INorthernFox</Authors>
+        <PackageProjectUrl>https://github.com/INorthernFox/SharedService</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/INorthernFox/SharedService</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>Shared;Utilities;Abstractions;Helpers</PackageTags>
     </PropertyGroup>
 
 </Project>
