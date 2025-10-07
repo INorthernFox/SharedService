@@ -9,6 +9,10 @@ permissions:
   contents: write
   packages: write
 
+defaults:
+  run:
+    shell: bash
+
 env:
   DOTNET_VERSION: '9.0.x'
   CONFIGURATION: Release
@@ -52,14 +56,29 @@ jobs:
         id: ver
         run: echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
 
-      - name: Restore
-        run: dotnet restore
+      - name: Trace context
+        run: |
+          set -x
+          dotnet --info
+          echo "Actor=$GITHUB_ACTOR"
+          echo "Repo=$GITHUB_REPOSITORY"
+          echo "Ref=$GITHUB_REF"
+          echo "Tag=$GITHUB_REF_NAME"
+          echo "Version=${{ steps.ver.outputs.value }}"
+
+      - name: Restore (solution-wide)
+        run: |
+          set -euxo pipefail
+          dotnet restore
 
       - name: Build ${{ matrix.name }}
-        run: dotnet build "${{ matrix.path }}" -c ${{ env.CONFIGURATION }} --no-restore
+        run: |
+          set -euxo pipefail
+          dotnet build "${{ matrix.path }}" -c ${{ env.CONFIGURATION }} --no-restore
 
       - name: Pack ${{ matrix.name }}
         run: |
+          set -euxo pipefail
           mkdir -p "${{ matrix.workdir }}/out"
           dotnet pack "${{ matrix.path }}" \
             -c ${{ env.CONFIGURATION }} --no-build \
@@ -89,7 +108,12 @@ jobs:
         with:
           path: ./dist
 
-      # Авторизация к GitHub Packages как NuGet-источнику (необязательно для push, но полезно для отладки/проверок)
+      - name: List downloaded artifacts (trace)
+        run: |
+          set -x
+          ls -R ./dist || true
+
+      # (не обязательно) Добавим source GitHub Packages для отладки/проверок
       - name: Add GitHub Packages NuGet source
         run: |
           dotnet nuget add source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
@@ -103,22 +127,30 @@ jobs:
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -euxo pipefail
-          # 1) SharedKernel
-          dotnet nuget push "$(ls dist/nupkg-SharedKernel-*/**/*.nupkg)" \
-            --api-key "$NUGET_AUTH_TOKEN" \
-            --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
-            --skip-duplicate
-          # 2) Core (зависит от SharedKernel)
-          dotnet nuget push "$(ls dist/nupkg-Core-*/**/*.nupkg)" \
-            --api-key "$NUGET_AUTH_TOKEN" \
-            --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
-            --skip-duplicate
-          # 3) Framework (зависит от Core и SharedKernel)
-          dotnet nuget push "$(ls dist/nupkg-Framework-*/**/*.nupkg)" \
-            --api-key "$NUGET_AUTH_TOKEN" \
-            --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
-            --skip-duplicate
+          set -euo pipefail
+
+          list() { find dist -type f -name "*.nupkg" -path "*/nupkg-$1-*/*"; }
+
+          publish() {
+            local name="$1"
+            local file
+            file="$(list "$name" | head -n 1 || true)"
+            if [ -z "${file:-}" ]; then
+              echo "✗ Package for '$name' not found under dist/nupkg-$name-*/"
+              ls -R dist || true
+              exit 1
+            fi
+            echo "→ Pushing $file"
+            dotnet nuget push "$file" \
+              --api-key "$NUGET_AUTH_TOKEN" \
+              --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
+              --skip-duplicate
+          }
+
+          # Порядок публикации соответствует зависимостям:
+          publish SharedKernel   # 1) SharedKernel
+          publish Core           # 2) Core (зависит от SharedKernel)
+          publish Framework      # 3) Framework (зависит от Core и SharedKernel)
 
   create-release:
     needs: publish-ordered
@@ -128,6 +160,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: ./dist
+
+      - name: List downloaded artifacts (trace)
+        run: |
+          set -x
+          ls -R ./dist || true
 
       - name: Create GitHub Release and upload packages
         uses: softprops/action-gh-release@v2
