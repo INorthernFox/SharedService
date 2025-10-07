@@ -1,0 +1,58 @@
+name: publish-release
+
+on:
+  push:
+    tags:
+      - 'v*'     # v1.2.3 -> 1.2.3
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  pack-and-publish:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: SharedKernel
+            path: src/SharedService.SharedKernel/SharedService.SharedKernel.csproj
+            workdir: src/SharedService.SharedKernel
+          - name: Core
+            path: src/SharedService.Core/SharedService.Core.csproj
+            workdir: src/SharedService.Core
+          - name: Framework
+            path: src/SharedService.Framework/SharedService.Framework.csproj
+            workdir: src/SharedService.Framework
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Extract version from tag
+        id: ver
+        run: echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Pack ${{ matrix.name }}
+        run: |
+          dotnet pack "${{ matrix.path }}" \
+            -c Release \
+            -o "${{ matrix.workdir }}/out" \
+            -p:Version=${{ steps.ver.outputs.value }} \
+            -p:ContinuousIntegrationBuild=true
+
+      - name: Publish ${{ matrix.name }} to GitHub Packages
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          dotnet nuget push "${{ matrix.workdir }}/out/*.nupkg" \
+            --api-key "$NUGET_AUTH_TOKEN" \
+            --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
+            --skip-duplicate
