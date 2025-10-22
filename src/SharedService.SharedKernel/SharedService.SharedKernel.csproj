@@ -15,7 +15,7 @@
     <RepositoryUrl>https://github.com/INorthernFox/SharedService</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://github.com/INorthernFox/SharedService</PackageProjectUrl>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReadmeFile>SharedKernel.README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
     <IncludeSymbols>true</IncludeSymbols>
@@ -34,7 +34,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="README.md" Pack="true" PackagePath="\" />
+    <None Include="SharedKernel.README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>
