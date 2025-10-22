@@ -28,6 +28,7 @@
 * **Swashbuckle.AspNetCore.SwaggerUI** — 9.0.3
 * **Microsoft.Extensions.Hosting** — 9.0.9
 * **StyleCop.Analyzers** — 1.1.118
+* **Serilog.AspNetCore** — 9.0.0
 * **Microsoft.SourceLink.GitHub** *(PrivateAssets = All)* — отладка по исходникам GitHub.
 
 ---
